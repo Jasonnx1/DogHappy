@@ -16,7 +16,6 @@ namespace DogFetchApp
             ApiHelper.ApiHelper.InitializeClient();
 
             currentViewmodel = new MainViewModel();
-
             DataContext = currentViewmodel;
         }
     }

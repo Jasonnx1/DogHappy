@@ -4,73 +4,62 @@ using System.Windows.Input;
 
 namespace DogFetchApp.Commands
 {
-    /// <summary>
-    /// Async Command
-    /// 
-    /// Based on John Thiriet AsynCommand
-    /// Source : https://johnthiriet.com/mvvm-going-async-with-async-command/
-    /// </summary>
-    public interface IAsyncCommand<T> : ICommand
+    public class AsyncCommand : IAsyncCommand
     {
-        Task ExecuteAsync(T parameter);
-        bool CanExecute(T parameter);
-    }
+        public event EventHandler CanExecuteChanged;
 
-    public class AsyncCommand<T> : IAsyncCommand<T>
-    {
         private bool _isExecuting;
-        private readonly Func<T, Task> _execute;
-        private readonly Func<T, bool> _canExecute;
+        private readonly Func<Task> _execute;
+        private readonly Func<bool> _canExecute;
+        private readonly IErrorHandler _errorHandler;
 
         public AsyncCommand(
-            Func<T, Task> execute,
-            Func<T, bool> canExecute = null)
+            Func<Task> execute,
+            Func<bool> canExecute = null,
+            IErrorHandler errorHandler = null)
         {
             _execute = execute;
             _canExecute = canExecute;
+            _errorHandler = errorHandler;
         }
 
-        public bool CanExecute(T parameter)
+        public bool CanExecute()
         {
-            return !_isExecuting && (_canExecute?.Invoke(parameter) ?? true);
+            return !_isExecuting && (_canExecute?.Invoke() ?? true);
         }
 
-        public async Task ExecuteAsync(T parameter)
+        public async Task ExecuteAsync()
         {
-            if (CanExecute(parameter))
+            if (CanExecute())
             {
                 try
                 {
                     _isExecuting = true;
-                    await _execute(parameter);
+                    await _execute();
                 }
                 finally
                 {
                     _isExecuting = false;
                 }
             }
+
             RaiseCanExecuteChanged();
         }
-
-        public event EventHandler CanExecuteChanged;
 
         public void RaiseCanExecuteChanged()
         {
             CanExecuteChanged?.Invoke(this, EventArgs.Empty);
         }
 
-        #region ICommand methods implementation
-        public bool CanExecute(object parameter)
+        #region Explicit implementations
+        bool ICommand.CanExecute(object parameter)
         {
-
-            return CanExecute((T)parameter);
+            return CanExecute();
         }
 
-        public void Execute(object parameter)
+        void ICommand.Execute(object parameter)
         {
-            /// We ignore the warning, since this way of executing
-            /// is the sync way
-            ExecuteAsync((T)parameter);
+            ExecuteAsync().FireAndForgetSafeAsync(_errorHandler);
         }
         #endregion
     }

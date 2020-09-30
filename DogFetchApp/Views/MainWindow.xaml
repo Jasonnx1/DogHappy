@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:DogFetchApp"
         mc:Ignorable="d"
+        xmlns:p="clr-namespace:DogFetchApp.Properties"
         Title="Dog picture fetcher" Height="450" Width="800">
     <Window.Resources>
         <Style TargetType="TextBlock">
@@ -19,18 +20,22 @@
     </Window.Resources>
     <DockPanel>
         <Menu DockPanel.Dock="Top">
-            <MenuItem Header="Réglage">
-                <MenuItem Header="Langues">
-                    <MenuItem Header="Français"/>
-                    <MenuItem Header="English"/>
+            <MenuItem Header="{x:Static p:Resources.options}">
+                <MenuItem Header="{x:Static p:Resources.language}">
+                    <MenuItem Header="Français" Command="{Binding ChangeLanguageCommand}" CommandParameter="fr"/>
+                    <MenuItem Header="English" Command="{Binding ChangeLanguageCommand}" CommandParameter="en"/>
                 </MenuItem>
             </MenuItem>
         </Menu>
         <StatusBar DockPanel.Dock="Bottom">
-            <TextBlock Text="Image URL : "/>
-            <Hyperlink>
-                <TextBlock Text="Put URL here"/>
+            <TextBlock Text="URL: "/>
+            <Hyperlink >
+                <TextBlock Text="{Binding CurrentImage}"/>
             </Hyperlink>
+            <Label HorizontalAlignment="Right" Content="Image:"/>
+            <Label HorizontalAlignment="Right" Content="{Binding DisplayCurrentIndex}"/>
+            <Label HorizontalAlignment="Right" Content="/"/>
+            <Label HorizontalAlignment="Right" Content="{Binding MaxIndex}"/>
         </StatusBar>
         <Grid Margin="5">
             <Grid.ColumnDefinitions>
@@ -46,46 +51,26 @@
                 <RowDefinition Height="auto"/>
             </Grid.RowDefinitions>
 
-            <TextBlock Grid.Column="0" Grid.Row="0" Text="Breed : "/>
-            <ComboBox Grid.Column="1" Grid.Row="0">
-                <ComboBox.ItemTemplate>
-                    <DataTemplate>
-                        
-                    </DataTemplate>
-                </ComboBox.ItemTemplate>
-            </ComboBox>
-            <TextBlock Grid.Row="1" Text="Nombre de photos :"/>
-            <ComboBox Grid.Row="1" Grid.Column="1">
+            <TextBlock Grid.Column="0" Grid.Row="0" Text="{x:Static p:Resources.breed}"/>
+            <ComboBox Grid.Column="1" Grid.Row="0" ItemsSource="{Binding Breeds}" SelectedItem="{Binding SelectedBreed, Mode=TwoWay}"/>
+
+            <TextBlock Grid.Row="1" Text="{x:Static p:Resources.number}"/>
+            <ComboBox Grid.Row="1" Grid.Column="1" SelectedValue="{Binding NumberOfImages,Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" SelectedValuePath="Content">
                 <ComboBoxItem Content="1"/>
                 <ComboBoxItem Content="3"/>
                 <ComboBoxItem Content="5"/>
                 <ComboBoxItem Content="10"/>
             </ComboBox>
-            <Button Grid.Row="2" Grid.Column="1" Content="Fetch!" Width="150"/>
+            <Button Grid.Row="2" Grid.Column="1" Content="{x:Static p:Resources.fetch}" Width="150" Command="{Binding FetchDogsCommand}"/>
             <Grid Grid.Row="3" Grid.ColumnSpan="2" Margin="20">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="auto"/>
                     <RowDefinition Height="auto"/>
                 </Grid.RowDefinitions>
-                <ListView Grid.Row="0" ItemsSource="{Binding}">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <UniformGrid Columns="5" HorizontalAlignment="Stretch"/>
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <!-- Vous pouvez utiliser le contrôle que vous voulez pour présenter les photos -->
-                    <ListView.ItemTemplate>
-                        <DataTemplate>
-                            <StackPanel Orientation="Vertical" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
-                                <Image Source="{Binding}" HorizontalAlignment="Stretch" VerticalAlignment="Top" Stretch="UniformToFill"/>
-                                <TextBlock Text="{Binding }" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" />
-                            </StackPanel>
-                        </DataTemplate>
-                    </ListView.ItemTemplate>
-                </ListView>
+                <Image Source="{Binding CurrentImage}" MaxHeight="180"/>
                 <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" Margin="5">
-                    <Button Content="Previous" Margin="10"/>
-                    <Button Content="Next" Margin="10"/>
+                    <Button Content="{x:Static p:Resources.previous}" Margin="10" Command="{Binding PreviousImageCommand}"/>
+                    <Button Content="{x:Static p:Resources.next}" Margin="10" Command="{Binding NextImageCommand}"/>
                 </StackPanel>
             </Grid>
         </Grid>
